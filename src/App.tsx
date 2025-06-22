@@ -1,8 +1,9 @@
-import { Center, Image, MantineProvider, NavLink, Title } from "@mantine/core";
+import { Center, Image, MantineProvider, NavLink, Space, TextInput, Title } from "@mantine/core";
 import "./App.css";
 import "@mantine/core/styles.css";
 import { FaHome } from "react-icons/fa";
 import { BiFoodMenu } from "react-icons/bi";
+import {useState} from "react";
 
 function App() {
   function log(message: string, level?: "info" | "warn" | "error") {
@@ -67,6 +68,42 @@ function App() {
       });
   }
 
+  function searchFoodByName(name: string) {
+    setFoodInfo({});
+    fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${name}&search_simple=1&json=1&page_size=10`)
+      .then((response) => response.json())
+      .then((data) => {
+        log("Food search completed successfully");
+        if (data.products && data.products.length > 0) {
+          log(`Found ${data.products.length} products for "${name}"`);
+          data.products.forEach((product: any) => {
+            setFoodInfo((prev: any) => ({
+              ...prev,
+              [product.code]: {
+                name: product.product_name,
+                ingredients: product.ingredients_text || "No ingredients listed",
+                nutritionalInfo: product.nutriments || "No nutritional information available",
+                code: product.code,
+                category: product.categories_tags ? product.categories_tags.join(", ") : "No category",
+                image: product.image_url || "No image available"
+              }
+            }));
+            log(`Product: ${product.product_name}, Code: ${product.code}`);
+          });
+        } else {
+          log(`No products found for "${name}"`, "warn"); 
+          alert(`No products found for "${name}"`);
+        }
+      })
+      .catch((error) => {
+        log(`Error searching food by name: ${error}`, "error");
+        alert(`Error searching food by name: ${error}`);
+      });
+  }
+
+  const [currentFoodSearch, setCurrentFoodSearch] = useState("");
+  const [foodInfo, setFoodInfo] = useState({});
+
   return (
     <MantineProvider>
       <div className="nav">
@@ -94,14 +131,39 @@ function App() {
         {window.location.href.split("?p=")[1] == "2" ? <>
           {/* Display food search page content here */}
           <Title order={3} className="content-title">Food Search</Title>
-          <Image
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Open_Food_Facts_logo.svg/1200px-Open_Food_Facts_logo.svg.png"
-            alt="Open Food Facts Logo"
-            className="content-image"
-          />
-          <Title order={4} className="content-subtitle">Search for food products</Title>
-          <button onClick={() => getFoodInfo("5000168194189")} className="content-button">
-          </button>
+          <TextInput value={currentFoodSearch} onChange={(e) => setCurrentFoodSearch(e.target.value)} placeholder="Search for food by name" />
+          <button onClick={() => searchFoodByName(currentFoodSearch)}>Search</button>
+          <Space h="md" />
+          {Object.keys(foodInfo).length > 0 ? (
+            <div className="food-info">
+              {Object.entries(foodInfo).map(([code, info]) => (
+
+                <div key={code} className="food-item">
+                  <Image src={info.image} alt={info.name} style={{ maxWidth: "100px", maxHeight: "200px" }} />
+                  <Title order={4}>{info.name}</Title>
+                  <p>{info.ingredients}</p>
+                  <p><strong>Category:</strong> {info.category}</p>
+                  {Object.keys(info.nutritionalInfo).length > 0 ? (
+                    <div>
+                      <Title order={5}>Nutritional Information</Title>
+                      <ul>
+                        {Object.entries(info.nutritionalInfo).map(([key, value]) => (
+                          <li key={key}>
+                            <strong>{key}:</strong> {value}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p>No nutritional information available</p>
+                  )}
+                  <p><strong>Code:</strong> {code}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <TextInput placeholder="No food information available" disabled />
+          )}
         </> : <>h</>}
       </div>
     </MantineProvider>
