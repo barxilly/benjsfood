@@ -35,11 +35,29 @@ function App() {
     return null;
   }
 
+  function isMobile() {
+    let is = (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      ) ||
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+      (navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)) ||
+      (window.innerWidth <= 800)
+    );
+    log(`isMobile: ${is}`);
+    return is;
+  }
+
   return (
     <MantineProvider>
       <div className="nav">
-        <Center p="md">
-        <Title order={2}>BenJSfood</Title></Center>
+        {isMobile() ? (
+          <></>
+        ) : (
+          <Center p="md">
+            <Title order={2}>BenJSfood</Title>
+          </Center>
+        )}
         <NavLink label="Home" leftSection={<FaHome size={16} />} />
       </div>
       <div className="content">Content</div>

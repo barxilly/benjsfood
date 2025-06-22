@@ -7,6 +7,22 @@
   border-right: 0.1em solid #ccc;
 }
 
+@media (max-width: 800px) {
+  .nav {
+    position: fixed;
+    bottom: 2vh;
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 10vh;
+    border-right: none;
+    overflow: hidden;
+    border: #ccc 0.1em solid;
+    border-radius: 0.5em;
+  }
+}
+
 .content {
   position: absolute;
   top: 0;
@@ -16,4 +32,13 @@
   padding: 1em;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+@media (max-width: 800px) {
+  .content {
+    top: auto;
+    left: 0;
+    width: 100%;
+    height: auto;
+  }
 }
