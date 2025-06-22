@@ -1,34 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
+import { Image, MantineProvider } from '@mantine/core';
 import './App.css'
+import '@mantine/core/styles.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  function log(message: string, level?: 'info' | 'warn' | 'error') {
+    console.log(`[benjsfood] [${new Date().toISOString().split("T")[1].split("Z")[0]}] [${level?.toUpperCase() || "INFO"}] ${message}`);
+  }
+
+  function saveToStorage(key: string, value: any) {
+    localStorage.setItem(key, JSON.stringify(value));
+    sessionStorage.setItem(key, JSON.stringify(value));
+    document.cookie = `${key}=${JSON.stringify(value)}; path=/; max-age=31536000;`; // 1 year
+  }
+
+  function getFromStorage(key: string) {
+    const localValue = localStorage.getItem(key);
+    if (localValue) return JSON.parse(localValue);
+
+    const sessionValue = sessionStorage.getItem(key);
+    if (sessionValue) return JSON.parse(sessionValue);
+
+    const cookieValue = document.cookie.split('; ').find(row => row.startsWith(`${key}=`));
+    if (cookieValue) {
+      return JSON.parse(cookieValue.split('=')[1]);
+    }
+
+  log(`No value found for key: ${key}`, 'warn');
+    return null;
+  }
+
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <MantineProvider>
+
+    </MantineProvider>
   )
 }
 
