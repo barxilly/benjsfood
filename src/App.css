@@ -4,7 +4,7 @@
   left: 0;
   width: 15vw;
   height: 100vh;
-  border-right: 0.1em solid #ccc;
+  border-right: 0.1em solid #bbb;
 }
 
 @media (max-width: 800px) {
@@ -15,11 +15,27 @@
     left: 50%;
     transform: translateX(-50%);
     width: 80%;
-    height: 10vh;
+    height: 6vh;
     border-right: none;
     overflow: hidden;
     border: #ccc 0.1em solid;
     border-radius: 0.5em;
+    display: inline-flex;
+  }
+
+  .navlink {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center !important;
+    height: 100%;
+    width: 100%;
+  }
+
+  .nlicon {
+    width: 100%;
+    height: 100%;
+    margin: 0.5em auto;
   }
 }
 

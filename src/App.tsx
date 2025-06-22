@@ -58,7 +58,8 @@ function App() {
             <Title order={2}>BenJSfood</Title>
           </Center>
         )}
-        <NavLink label="Home" leftSection={<FaHome size={16} />} />
+        <NavLink label="Home" className="navlink" leftSection={<FaHome className="nlicon" size={16} />} />
+        <NavLink label="Home" className="navlink" leftSection={<FaHome className="nlicon" size={16} />} />
       </div>
       <div className="content">Content</div>
     </MantineProvider>
