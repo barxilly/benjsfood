@@ -1,0 +1,19 @@
+.nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15vw;
+  height: 100vh;
+  border-right: 0.1em solid #ccc;
+}
+
+.content {
+  position: absolute;
+  top: 0;
+  left: 15vw;
+  width: 85vw;
+  height: 100vh;
+  padding: 1em;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
