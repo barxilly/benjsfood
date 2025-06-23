@@ -1,5 +1,5 @@
 # TODO
-- [ ] Implement food searching by name and barcode
+- [x] Implement food searching by name and barcode
 - [ ] Implement food logging
 - [ ] Goals System?
 - [ ] Fonts

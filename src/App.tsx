@@ -49,27 +49,55 @@ function App() {
     return is;
   }
 
-   function getFoodInfo(barcode: string = "5000168194189") {
-    fetch(`https://world.openfoodfacts.net/api/v2/product/${barcode}.json`)
-      .then((response) => response.json())
+  async function getFoodInfo(barcode: string = "5000168194189") {
+    try {
+      const response = await fetch(`https://world.openfoodfacts.net/api/v2/product/${barcode}.json`);
+      const data = await response.json();
+      log("Food info fetched successfully");
+      if (data.status === 1) {
+        log(`Product found: ${data.product.product_name}`);
+        return data;
+      } else {
+        log("Product not found", "warn");
+        alert("Product not found");
+        return null;
+      }
+    } catch (error) {
+      log(`Error fetching food info: ${error}`, "error");
+      return null;
+    }
+  }
+
+  async function searchFoodByName(name: string) {
+    setFoodInfo({});
+    if (!name.match(/^[a-zA-Z\s]+$/) && name.match(/^\d+$/)) {
+      log(`Searching food by barcode: ${name}`);
+      getFoodInfo(name)
       .then((data) => {
-        log("Food info fetched successfully");
-        if (data.status === 1) {
-          log(`Product found: ${data.product.product_name}`);
-          saveToStorage("foodInfo", data.product);
-          alert(`Product: ${data.product.product_name}`);
+        if (data && data.product) {
+          setFoodInfo((prev: any) => ({
+            ...prev,
+            [data.product.code]: {
+              name: data.product.product_name,
+              ingredients: data.product.ingredients_text || "No ingredients listed",
+              nutritionalInfo: data.product.nutriments || "No nutritional information available",
+              code: data.product.code,
+              category: data.product.categories_tags ? data.product.categories_tags.join(", ") : "No category",
+              image: data.product.image_url || "No image available"
+            }
+          }));
+          log(`Product: ${data.product.product_name}, Code: ${data.product.code}`);
         } else {
-          log("Product not found", "warn");
-          alert("Product not found");
+          log(`No product found for barcode: ${name}`, "warn");
+          alert(`No product found for barcode: ${name}`);
         }
       })
       .catch((error) => {
-        log(`Error fetching food info: ${error}`, "error");
+        log(`Error fetching food by barcode: ${error}`, "error");
+        alert(`Error fetching food by barcode: ${error}`);
       });
-  }
-
-  function searchFoodByName(name: string) {
-    setFoodInfo({});
+      return;
+    }
     fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${name}&search_simple=1&json=1&page_size=10`)
       .then((response) => response.json())
       .then((data) => {
@@ -131,7 +159,7 @@ function App() {
         {window.location.href.split("?p=")[1] == "2" ? <>
           {/* Display food search page content here */}
           <Title order={3} className="content-title">Food Search</Title>
-          <TextInput value={currentFoodSearch} onChange={(e) => setCurrentFoodSearch(e.target.value)} placeholder="Search for food by name" />
+          <TextInput value={currentFoodSearch} onChange={(e) => setCurrentFoodSearch(e.target.value)} placeholder="Search for food by name or barcode" />
           <button onClick={() => searchFoodByName(currentFoodSearch)}>Search</button>
           <Space h="md" />
           {Object.keys(foodInfo).length > 0 ? (
