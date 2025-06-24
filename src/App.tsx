@@ -6,6 +6,7 @@ import {
   Image,
   MantineProvider,
   NavLink,
+  RingProgress,
   Space,
   Text,
   TextInput,
@@ -103,13 +104,18 @@ function App() {
         const foodObj = {
           name: data.product.product_name,
           ingredients: data.product.ingredients_text || "No ingredients listed",
-          nutritionalInfo: data.product.nutriments || "No nutritional information available",
+          nutritionalInfo:
+            data.product.nutriments || "No nutritional information available",
           code: data.product.code,
-          category: data.product.categories_tags ? data.product.categories_tags.join(", ") : "No category",
+          category: data.product.categories_tags
+            ? data.product.categories_tags.join(", ")
+            : "No category",
           image: data.product.image_url || "No image available",
         };
         setFoodInfo((prev: any) => ({ ...prev, [data.product.code]: foodObj }));
-        log(`Product: ${data.product.product_name}, Code: ${data.product.code}`);
+        log(
+          `Product: ${data.product.product_name}, Code: ${data.product.code}`
+        );
         foundFood = foodObj;
       } else {
         log(`No product found for barcode: ${name}`, "warn");
@@ -129,9 +135,12 @@ function App() {
             [product.code]: {
               name: product.product_name,
               ingredients: product.ingredients_text || "No ingredients listed",
-              nutritionalInfo: product.nutriments || "No nutritional information available",
+              nutritionalInfo:
+                product.nutriments || "No nutritional information available",
               code: product.code,
-              category: product.categories_tags ? product.categories_tags.join(", ") : "No category",
+              category: product.categories_tags
+                ? product.categories_tags.join(", ")
+                : "No category",
               image: product.image_url || "No image available",
             },
           }));
@@ -142,9 +151,12 @@ function App() {
         foundFood = {
           name: first.product_name,
           ingredients: first.ingredients_text || "No ingredients listed",
-          nutritionalInfo: first.nutriments || "No nutritional information available",
+          nutritionalInfo:
+            first.nutriments || "No nutritional information available",
           code: first.code,
-          category: first.categories_tags ? first.categories_tags.join(", ") : "No category",
+          category: first.categories_tags
+            ? first.categories_tags.join(", ")
+            : "No category",
           image: first.image_url || "No image available",
         };
       } else {
@@ -169,7 +181,29 @@ function App() {
     const foodItem = await searchFoodByName(currentFoodSearch);
     setIsLoading(false);
     if (foodItem && Object.keys(foodItem).length > 0) {
-      const logEntry = `${foodItem.name} (${foodItem.code}) - ${foodItem.ingredients}`;
+      const logEntry = `${foodItem.name} (${foodItem.code}) - ${
+        foodItem.ingredients
+      } - ${
+        foodItem.nutritionalInfo.calories !== undefined &&
+        foodItem.nutritionalInfo.calories !== null
+          ? foodItem.nutritionalInfo.calories + "kcal"
+          : "N/Akcal"
+      } - ${
+        foodItem.nutritionalInfo.proteins !== undefined &&
+        foodItem.nutritionalInfo.proteins !== null
+          ? foodItem.nutritionalInfo.proteins + "g"
+          : "N/Ag"
+      } - ${
+        foodItem.nutritionalInfo.fat !== undefined &&
+        foodItem.nutritionalInfo.fat !== null
+          ? foodItem.nutritionalInfo.fat + "g"
+          : "N/Ag"
+      } - ${
+        foodItem.nutritionalInfo.carbohydrates !== undefined &&
+        foodItem.nutritionalInfo.carbohydrates !== null
+          ? foodItem.nutritionalInfo.carbohydrates + "g"
+          : "N/Ag"
+      }`;
       setFoodLog((prevLog: any) => {
         const updatedLog = [...prevLog, logEntry];
         saveToStorage("foodLog", updatedLog);
@@ -311,15 +345,20 @@ function App() {
             <Title order={3} className="content-title">
               Log Food
             </Title>
-            <Flex direction="column" gap="md">
+            <Space h="md" />
+            <Flex direction="column" gap="0">
               <TextInput
                 value={currentFoodSearch}
                 onChange={(e) => setCurrentFoodSearch(e.target.value)}
                 placeholder="Log food by name or barcode"
               />
+              <Space h="sm" />
               <Button onClick={logfood} disabled={isLoading}>
                 {isLoading ? "Fetching Data..." : "Log Food"}
               </Button>
+              <Text size="sm" color="dimmed">
+                Provided by Open Food Facts
+              </Text>
             </Flex>
             <Space h="md" />
             <Text>
@@ -340,9 +379,88 @@ function App() {
             <Title order={3} className="content-title">
               Dashboard
             </Title>
-            <TextInput
-              placeholder="This feature is under development"
-              disabled
+            {/* Protein ring, out of daily recommended 60g */ }
+            <RingProgress
+              sections={[{ value: foodLog.reduce((acc: number, item: string) => {
+                const match = item.match(/(\d+(\.\d+)?)\s*g/);
+                return match ? acc + parseFloat(match[1]) : acc;
+              }, 0) / 60 * 100, color: "blue" }]}
+              label={
+                <Text size="xs" align="center">
+                  Protein Intake
+                  <br />
+                  {foodLog.reduce((acc: number, item: string) => {
+                    const match = item.match(/(\d+(\.\d+)?)\s*g/);
+                    return match ? acc + parseFloat(match[1]) : acc;
+                  }, 0)}g / 60g
+                </Text>
+              }
+              size={120}
+              thickness={4}
+              roundCaps
+            />
+            <Space h="md" />
+            {/* Calories ring, out of daily recommended 2000kcal */ }
+            <RingProgress
+              sections={[{ value: foodLog.reduce((acc: number, item: string) => {
+                const match = item.match(/(\d+(\.\d+)?)\s*kcal/);
+                return match ? acc + parseFloat(match[1]) : acc;
+              }, 0) / 2000 * 100, color: "red" }]}
+              label={
+                <Text size="xs" align="center">
+                  Caloric Intake
+                  <br />
+                  {foodLog.reduce((acc: number, item: string) => {
+                    const match = item.match(/(\d+(\.\d+)?)\s*kcal/);
+                    return match ? acc + parseFloat(match[1]) : acc;
+                  }, 0)}kcal / 2000kcal
+                </Text>
+              }
+              size={120}
+              thickness={4}
+              roundCaps
+            />
+            <Space h="md" />
+            { /* Fats ring, out of daily recommended 50g */ }
+            <RingProgress
+              sections={[{ value: foodLog.reduce((acc: number, item: string) => {
+                const match = item.match(/(\d+(\.\d+)?)\s*g/);
+                return match ? acc + parseFloat(match[1]) : acc;
+              }, 0) / 50 * 100, color: "green" }]}
+              label={
+                <Text size="xs" align="center">
+                  Fat Intake
+                  <br />
+                  {foodLog.reduce((acc: number, item: string) => {
+                    const match = item.match(/(\d+(\.\d+)?)\s*g/);
+                    return match ? acc + parseFloat(match[1]) : acc;
+                  }, 0)}g / 50g
+                </Text>
+              }
+              size={120}
+              thickness={4}
+              roundCaps
+            />
+            <Space h="md" />
+            { /* Carbohydrates ring, out of daily recommended 275g */ }
+            <RingProgress
+              sections={[{ value: foodLog.reduce((acc: number, item: string) => {
+                const match = item.match(/(\d+(\.\d+)?)\s*g/);
+                return match ? acc + parseFloat(match[1]) : acc;
+              }, 0) / 275 * 100, color: "orange" }]}
+              label={
+                <Text size="xs" align="center">
+                  Carbohydrate Intake
+                  <br />
+                  {foodLog.reduce((acc: number, item: string) => {
+                    const match = item.match(/(\d+(\.\d+)?)\s*g/);
+                    return match ? acc + parseFloat(match[1]) : acc;
+                  }, 0)}g / 275g
+                </Text>
+              }
+              size={120}
+              thickness={4}
+              roundCaps
             />
           </>
         )}
